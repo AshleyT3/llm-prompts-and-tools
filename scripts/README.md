@@ -2,12 +2,16 @@
 
 | File | Description |
 |------|-------------|
-| [`claude_to_markdown.py`](claude_to_markdown.py) | Convert Claude Code JSONL conversation history to browsable Markdown files |
+| [`claude_to_markdown.py`](claude_to_markdown.py) | Convert Claude Code JSONL conversation history to browsable Markdown files | 
 | [`claude_to_markdown_creation_prompt.md`](claude_to_markdown_creation_prompt.md) | A prompt that specifies the functionality of `claude_to_markdown.py` — feed it to any capable LLM to generate your own version, tweak it first to tailor the behavior, or simply read it as a precise functional spec |
 
 ---
 
 ## claude_to_markdown.py
+
+**Demo video:** [Search Your Claude Code Sessions Offline | JSONL to Markdown](https://www.youtube.com/watch?v=RP_PrUr5TmI)
+
+https://www.youtube.com/watch?v=RP_PrUr5TmI
 
 ### The problem
 
