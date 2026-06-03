@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Ashley R. Thomas
+# Vibe coded w/Claude Code (Sonnet, Opus 4.7/4.8).
+# Vibe your own: see ollama_summarize_claude_markdown_creation_prompt.md in this directory.
 """
 ollama_summarize_claude_markdown.py — Summarize Claude Code session logs via
 local Ollama. Map-reduce summarization with section-aware chunking on the

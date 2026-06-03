@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Ashley R. Thomas
+# Vibe coded w/Claude Code (Sonnet, Opus 4.7/4.8).
+# Vibe your own: see claude_to_markdown_creation_prompt.md in this directory.
 """Convert Claude Code JSONL conversation files to readable Markdown."""
 
 import argparse

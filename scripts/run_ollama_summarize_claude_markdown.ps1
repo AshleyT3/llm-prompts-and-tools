@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Ashley R. Thomas
+# Vibe coded w/Claude Code (Sonnet, Opus 4.7/4.8).
 
 # The tutorial video uses the following one-liner:
 #
