@@ -155,3 +155,38 @@ optional arguments:
 - Generate your own version of the script with any capable AI code generator
 - Tweak the prompt first to customize the behavior (model, chunking, prompts, output structure)
 - Read it as documentation or functional specification for the ollama_summarize_claude_markdown script
+
+## run_ollama_summarize_claude_markdown.ps1
+
+A PowerShell wrapper (Windows / PowerShell 7+) around `ollama_summarize_claude_markdown.py` that saves you from retyping the same boilerplate each run. It:
+
+- Creates a fresh timestamped output directory (`<OutputRootDirectory>\yyyyMMdd-HHmmss\`) per run
+- Runs the summarizer (located side-by-side with the script) with output unbuffered
+- Tees all output to `log.txt` inside that directory
+- Surfaces a clear troubleshooting hint if Python isn't on `PATH` or `requests` isn't installed
+
+### Usage
+
+```powershell
+# Summarize a folder; results land in C:\out\<timestamp>\
+.\run_ollama_summarize_claude_markdown.ps1 C:\sessions-md C:\out
+
+# Pick a model (short name or full Ollama tag), run concurrently, resume
+.\run_ollama_summarize_claude_markdown.ps1 C:\sessions-md C:\out -Model phi4 -Parallel 4 -Resume
+
+# Capture per-phase diagnostics
+.\run_ollama_summarize_claude_markdown.ps1 C:\sessions-md C:\out -DiagDir C:\diag
+```
+
+### Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `SourceProjectMarkdownDirectory` | (positional, required) Markdown file or folder to summarize |
+| `OutputRootDirectory` | (positional, required) Parent directory; a timestamped run subdir is created under it |
+| `-Model` | Short name or full Ollama tag. Known short names (`gemma4`, `phi4`, `llama3.1`, `gpt-oss`) map to their full tag; anything else is passed through as-is. Default: `gemma4` |
+| `-Parallel` | Concurrent Ollama requests. Default: `1` |
+| `-Resume` | Skip sources that already have a summary in the output directory. Off by default |
+| `-DiagDir` | Capture per-phase diagnostic outputs under this directory. Unset by default |
+
+The `-Model`, `-Parallel`, `-Resume`, and `-DiagDir` options map directly onto the Python script's `--model`, `--parallel`, `--resume`, and `--diag-dir`; optional flags are only passed through when set, so the Python defaults apply otherwise.
