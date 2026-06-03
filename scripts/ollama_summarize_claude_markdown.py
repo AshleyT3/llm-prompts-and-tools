@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Ashley R. Thomas
 """
 ollama_summarize_claude_markdown.py — Summarize Claude Code session logs via
 local Ollama. Map-reduce summarization with section-aware chunking on the

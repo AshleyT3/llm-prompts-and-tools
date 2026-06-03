@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Convert Claude Code JSONL conversation files to readable Markdown.
-Copyright (c) 2026 - Ashley R. Thomas
-"""
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Ashley R. Thomas
+"""Convert Claude Code JSONL conversation files to readable Markdown."""
 
 import argparse
 import json
