@@ -82,7 +82,8 @@ optional arguments:
 
 ## ollama_summarize_claude_markdown.py
 
-**Demo video:** TBD
+**Demo video:** [SUMMARIZE your CLAUDE CODE Project Sessions — Offline, Local LLM](https://www.youtube.com/watch?v=LKgIWWNlFcQ)
+
 
 ### The problem
 
