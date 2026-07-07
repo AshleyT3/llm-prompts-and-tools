@@ -7,6 +7,7 @@
 
 import argparse
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -133,6 +134,96 @@ def de_escape_content(content: str) -> str:
     return content
 
 
+# --- Markdown angle-bracket escaping ----------------------------------------
+#
+# De-escaped conversation text may contain bare `<...>` sequences that lack
+# Markdown escaping (e.g. `<script date>`, `<uuid>`).  A Markdown renderer that
+# passes raw HTML through will treat these as tags: `<script>`/`<style>` etc.
+# are raw-text elements that make it swallow everything until a (never-arriving)
+# closing tag, truncating the document; other `<word...>` sequences render as
+# unknown tags and silently vanish.
+#
+# We restore the Markdown escaping that keeps `<` and `>` literal by
+# backslash-escaping them (`\<`, `\>`) — the idiomatic Markdown escape.  We do
+# this only OUTSIDE code spans / fenced code blocks, where `<...>` is already
+# literal and a backslash would render verbatim.  Blockquote `>` markers are
+# also preserved so quoting still renders.
+
+_FENCE_RE = re.compile(r'^(\s{0,3})(`{3,}|~{3,})(.*)$')
+_BLOCKQUOTE_RE = re.compile(r'^(\s{0,3}(?:> ?)+)')
+
+
+def _escape_angles(text: str) -> str:
+    """Backslash-escape < and > in a run of plain (non-code) text."""
+    return text.replace('<', r'\<').replace('>', r'\>')
+
+
+def _escape_inline(text: str) -> str:
+    """Escape angle brackets in a single line, skipping inline code spans."""
+    result: List[str] = []
+    i, n = 0, len(text)
+    while i < n:
+        if text[i] == '`':
+            # Opening backtick run — a code span keeps its content verbatim.
+            k = i
+            while k < n and text[k] == '`':
+                k += 1
+            opening = text[i:k]
+            # Find a closing run of exactly the same length.
+            m, close = k, -1
+            while m < n:
+                if text[m] == '`':
+                    p = m
+                    while p < n and text[p] == '`':
+                        p += 1
+                    if p - m == len(opening):
+                        close = p
+                        break
+                    m = p
+                else:
+                    m += 1
+            if close != -1:
+                result.append(text[i:close])  # code span: leave verbatim
+                i = close
+            else:
+                result.append(_escape_angles(opening))  # unmatched: literal
+                i = k
+        else:
+            j = i
+            while j < n and text[j] != '`':
+                j += 1
+            result.append(_escape_angles(text[i:j]))
+            i = j
+    return ''.join(result)
+
+
+def escape_angles_outside_code(text: str) -> str:
+    """Backslash-escape < and > in Markdown text, preserving code blocks."""
+    out: List[str] = []
+    in_fence = False
+    fence_marker = ''
+    for line in text.split('\n'):
+        if in_fence:
+            stripped = line.strip()
+            if (stripped and set(stripped) == {fence_marker[0]}
+                    and len(stripped) >= len(fence_marker)):
+                in_fence = False
+            out.append(line)  # inside a fence: always verbatim
+            continue
+
+        fence = _FENCE_RE.match(line)
+        if fence:
+            in_fence = True
+            fence_marker = fence.group(2)
+            out.append(line)  # fence delimiter line: verbatim
+            continue
+
+        bq = _BLOCKQUOTE_RE.match(line)
+        prefix = bq.group(0) if bq else ''
+        out.append(prefix + _escape_inline(line[len(prefix):]))
+    return '\n'.join(out)
+
+
 def get_earliest_timestamp(jsonl_path: Path) -> Optional[str]:
     """Return earliest timestamp in a JSONL file formatted as YYYYMMDD-hhmm."""
     earliest = None
@@ -253,14 +344,14 @@ def generate_markdown(messages: List[Dict[str, Any]],
     sections = []
 
     if session_id:
-        sections.append(f"Session ID: {session_id}\n")
+        sections.append(f"Session ID: {_escape_angles(session_id)}\n")
         title = custom_title if custom_title else '<not-specified>'
-        sections.append(f"Title: {title}\n\n")
+        sections.append(f"Title: {_escape_angles(title)}\n\n")
 
     counter = 0
     for message in messages:
         role = message['role']
-        content = de_escape_content(message['content'])
+        content = escape_angles_outside_code(de_escape_content(message['content']))
         ts_formatted = format_timestamp_local(message.get('timestamp', ''))
         ts_suffix = f" {ts_formatted}" if ts_formatted else ''
 

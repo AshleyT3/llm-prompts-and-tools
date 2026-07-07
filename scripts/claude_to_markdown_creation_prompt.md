@@ -64,6 +64,26 @@ Before writing to markdown, de-escape JSON-escaped content in this order:
 2. `\"` → `"`
 3. `` \` `` → `` ` ``
 
+## Markdown Angle-Bracket Escaping
+
+A de-escaped string may contain bare `<` / `>` characters that lack Markdown
+escaping (e.g. `<script date>`, `<uuid>`, `<not-specified>`). Written verbatim
+into the output `.md`, a renderer that passes HTML through can treat these as
+tags — `<script>`/`<style>`/`<textarea>` truncate the document, other
+`<word...>` sequences silently vanish.
+
+When writing output, backslash-escape them (`<` → `\<`, `>` → `\>`) so they
+render as literal text. Constraints:
+- Escape **only** `<` and `>`; leave all other Markdown untouched.
+- Do **not** escape inside inline code spans (`` `...` ``) or fenced code
+  blocks (```` ``` ```` / `~~~`), where `<...>` is already literal and a
+  backslash would render verbatim.
+- Preserve leading blockquote `>` markers; escape only the text after them.
+- Escape the metadata fields (session id, title) the same way.
+
+(HTML entities `&lt;`/`&gt;` render identically; backslash is chosen as the more
+idiomatic Markdown escape.)
+
 ## Markdown Output Format
 
 For each session, generate a markdown file structured as:
